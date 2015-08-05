@@ -30,7 +30,10 @@ var ReactCSSTransitionGroup = React.createClass({
     transitionName: React.PropTypes.string.isRequired,
     transitionAppear: React.PropTypes.bool,
     transitionEnter: React.PropTypes.bool,
-    transitionLeave: React.PropTypes.bool
+    transitionLeave: React.PropTypes.bool,
+    transitionAppearTimeout: React.PropTypes.number,
+    transitionEnterTimeout: React.PropTypes.number,
+    transitionLeaveTimeout: React.PropTypes.number,
   },
 
   getDefaultProps: function() {
@@ -50,7 +53,10 @@ var ReactCSSTransitionGroup = React.createClass({
         name: this.props.transitionName,
         appear: this.props.transitionAppear,
         enter: this.props.transitionEnter,
-        leave: this.props.transitionLeave
+        leave: this.props.transitionLeave,
+        appearTimeout: this.props.transitionAppearTimeout,
+        enterTimeout: this.props.transitionEnterTimeout,
+        leaveTimeout: this.props.transitionLeaveTimeout,
       },
       child
     );

@@ -31,7 +31,7 @@ describe('ReactCSSTransitionGroup', function() {
 
   it('should warn and clean-up after some time with no transitionend', function() {
     var a = React.render(
-      <ReactCSSTransitionGroup transitionName="yolo">
+      <ReactCSSTransitionGroup transitionName="yolo" transitionLeaveTimeout={ 200 }>
         <span key="one" id="one" />
       </ReactCSSTransitionGroup>,
       container
@@ -41,7 +41,7 @@ describe('ReactCSSTransitionGroup', function() {
     setTimeout.mock.calls.length = 0;
 
     React.render(
-      <ReactCSSTransitionGroup transitionName="yolo">
+      <ReactCSSTransitionGroup transitionName="yolo" transitionLeaveTimeout={ 200 }>
         <span key="two" id="two" />
       </ReactCSSTransitionGroup>,
       container
@@ -52,8 +52,8 @@ describe('ReactCSSTransitionGroup', function() {
 
     // For some reason jst is adding extra setTimeout()s and grunt test isn't,
     // so we need to do this disgusting hack.
-    for (var i = 0 ; i < setTimeout.mock.calls.length; i++) {
-      if (setTimeout.mock.calls[i][1] === 5000) {
+    for (var i = 0; i < setTimeout.mock.calls.length; i++) {
+      if (setTimeout.mock.calls[i][1] === 200) {
         setTimeout.mock.calls[i][0]();
         break;
       }

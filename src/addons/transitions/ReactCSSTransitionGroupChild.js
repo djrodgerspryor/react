@@ -25,7 +25,6 @@ var warning = require('warning');
 // their node will be stuck in the DOM forever, so we detect if an animation
 // does not start and if it doesn't, we just call the end listener immediately.
 var TICK = 17;
-var NO_EVENT_TIMEOUT = 5000;
 
 var ReactCSSTransitionGroupChild = React.createClass({
   displayName: 'ReactCSSTransitionGroupChild',
@@ -35,12 +34,32 @@ var ReactCSSTransitionGroupChild = React.createClass({
     appear: React.PropTypes.bool,
     enter: React.PropTypes.bool,
     leave: React.PropTypes.bool,
+    appearTimeout: React.PropTypes.number,
+    enterTimeout: React.PropTypes.number,
+    leaveTimeout: React.PropTypes.number,
   },
 
-  transition: function(animationType, finishCallback) {
-    var node = this.getDOMNode();
-    var className = this.props.name + '-' + animationType;
-    var activeClassName = className + '-active';
+  getDefaultProps: function() {
+    return {
+      appearTimeout: 5000,
+      enterTimeout: 5000,
+      leaveTimeout: 5000,
+    };
+  },
+
+  transition: function(animationType, finishCallback, noEventDelay) {
+    var node = React.findDOMNode(this);
+
+    if (!node) {
+      if (finishCallback) {
+        finishCallback();
+      }
+      return;
+    }
+
+    var className = this.props.name[animationType] || this.props.name + '-' + animationType;
+    var activeClassName = this.props.name[animationType + 'Active'] || className + '-active';
+
     var noEventTimeout = null;
 
     var endListener = function(e) {
@@ -80,13 +99,13 @@ var ReactCSSTransitionGroupChild = React.createClass({
           '%sms). You should either disable this ' +
           'transition in JS, add a CSS animation/transition or ' +
           'specify a larger timeout.',
-          NO_EVENT_TIMEOUT
+          noEventDelay
         );
 
         // Clean-up as-if the animation had finished properly
         endListener();
       },
-      NO_EVENT_TIMEOUT
+      noEventDelay
     );
   },
 
@@ -120,7 +139,7 @@ var ReactCSSTransitionGroupChild = React.createClass({
 
   componentWillAppear: function(done) {
     if (this.props.appear) {
-      this.transition('appear', done);
+      this.transition('appear', done, this.props.appearTimeout);
     } else {
       done();
     }
@@ -128,7 +147,7 @@ var ReactCSSTransitionGroupChild = React.createClass({
 
   componentWillEnter: function(done) {
     if (this.props.enter) {
-      this.transition('enter', done);
+      this.transition('enter', done, this.props.enterTimeout);
     } else {
       done();
     }
@@ -136,7 +155,7 @@ var ReactCSSTransitionGroupChild = React.createClass({
 
   componentWillLeave: function(done) {
     if (this.props.leave) {
-      this.transition('leave', done);
+      this.transition('leave', done, this.props.leaveTimeout);
     } else {
       done();
     }
