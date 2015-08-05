@@ -29,7 +29,7 @@ describe('ReactCSSTransitionGroup', function() {
     spyOn(console, 'warn');
   });
 
-  it('should warn after time with no transitionend', function() {
+  it('should warn and clean-up after some time with no transitionend', function() {
     var a = React.render(
       <ReactCSSTransitionGroup transitionName="yolo">
         <span key="one" id="one" />
@@ -59,8 +59,11 @@ describe('ReactCSSTransitionGroup', function() {
       }
     }
 
-    expect(a.getDOMNode().childNodes.length).toBe(2);
-    expect(console.warn.argsForCall.length).toBe(1);
+    expect(console.error.argsForCall.length).toBe(1);
+
+    // The leaving child has been removed
+    expect(React.findDOMNode(a).childNodes.length).toBe(1);
+    expect(React.findDOMNode(a).childNodes[0].id).toBe('two');
   });
 
   it('should keep both sets of DOM nodes around', function() {

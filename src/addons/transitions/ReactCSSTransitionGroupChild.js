@@ -27,22 +27,6 @@ var warning = require('warning');
 var TICK = 17;
 var NO_EVENT_TIMEOUT = 5000;
 
-var noEventListener = null;
-
-
-if (__DEV__) {
-  noEventListener = function() {
-    warning(
-      false,
-      'transition(): tried to perform an animation without ' +
-      'an animationend or transitionend event after timeout (' +
-      '%sms). You should either disable this ' +
-      'transition in JS or add a CSS animation/transition.',
-      NO_EVENT_TIMEOUT
-    );
-  };
-}
-
 var ReactCSSTransitionGroupChild = React.createClass({
   displayName: 'ReactCSSTransitionGroupChild',
 
@@ -63,9 +47,8 @@ var ReactCSSTransitionGroupChild = React.createClass({
       if (e && e.target !== node) {
         return;
       }
-      if (__DEV__) {
-        clearTimeout(noEventTimeout);
-      }
+
+      clearTimeout(noEventTimeout);
 
       CSSCore.removeClass(node, className);
       CSSCore.removeClass(node, activeClassName);
@@ -86,9 +69,25 @@ var ReactCSSTransitionGroupChild = React.createClass({
     // Need to do this to actually trigger a transition.
     this.queueClass(activeClassName);
 
-    if (__DEV__) {
-      noEventTimeout = setTimeout(noEventListener, NO_EVENT_TIMEOUT);
-    }
+    // 'transitionend' events are unreliable - we always need a timeout
+    // to clean-up any events that the browser forgot about.
+    noEventTimeout = setTimeout(
+      function() {
+        warning(
+          false,
+          'transition(): tried to perform an animation without ' +
+          'an animationend or transitionend event after timeout (' +
+          '%sms). You should either disable this ' +
+          'transition in JS, add a CSS animation/transition or ' +
+          'specify a larger timeout.',
+          NO_EVENT_TIMEOUT
+        );
+
+        // Clean-up as-if the animation had finished properly
+        endListener();
+      },
+      NO_EVENT_TIMEOUT
+    );
   },
 
   queueClass: function(className) {
