@@ -23,53 +23,34 @@ describe('ReactCSSTransitionGroup', function() {
   beforeEach(function() {
     React = require('React');
     ReactCSSTransitionGroup = require('ReactCSSTransitionGroup');
-    mocks = require('mocks');
 
     container = document.createElement('div');
-    spyOn(console, 'warn');
+    spyOn(console, 'error');
   });
 
-  it('should warn after some time with no transitionend', function() {
-    var a = React.render(
-      <ReactCSSTransitionGroup transitionName="yolo">
+  it('should warn if timeouts aren\'t specified', function() {
+    React.render(
+      <ReactCSSTransitionGroup
+        transitionName="yolo"
+        transitionEnter={false}
+        transitionLeave={true}
+      >
         <span key="one" id="one" />
       </ReactCSSTransitionGroup>,
       container
     );
-    expect(React.findDOMNode(a).childNodes.length).toBe(1);
 
-    setTimeout.mock.calls.length = 0;
-
-    React.render(
-      <ReactCSSTransitionGroup transitionName="yolo">
-        <span key="two" id="two" />
-      </ReactCSSTransitionGroup>,
-      container
-    );
-    expect(React.findDOMNode(a).childNodes.length).toBe(2);
-    expect(React.findDOMNode(a).childNodes[0].id).toBe('two');
-    expect(React.findDOMNode(a).childNodes[1].id).toBe('one');
-
-    // For some reason jst is adding extra setTimeout()s and grunt test isn't,
-    // so we need to do this disgusting hack.
-    for (var i = 0; i < setTimeout.mock.calls.length; i++) {
-      if (setTimeout.mock.calls[i][1] === 5000) {
-        setTimeout.mock.calls[i][0]();
-        break;
-      }
-    }
-
+    // Warning about the missing transitionLeaveTimeout prop
     expect(console.error.argsForCall.length).toBe(1);
-
-    // Nothing has changed in the DOM
-    expect(React.findDOMNode(a).childNodes.length).toBe(2);
-    expect(React.findDOMNode(a).childNodes[0].id).toBe('two');
-    expect(React.findDOMNode(a).childNodes[1].id).toBe('one');
   });
 
-  it('should clean-up silently after the user-specified timeout', function() {
+  it('should clean-up silently after the timeout elapses', function() {
     var a = React.render(
-      <ReactCSSTransitionGroup transitionName="yolo" transitionLeaveTimeout={ 200 }>
+      <ReactCSSTransitionGroup
+        transitionName="yolo"
+        transitionEnter={false}
+        transitionLeaveTimeout={200}
+      >
         <span key="one" id="one" />
       </ReactCSSTransitionGroup>,
       container
@@ -79,7 +60,11 @@ describe('ReactCSSTransitionGroup', function() {
     setTimeout.mock.calls.length = 0;
 
     React.render(
-      <ReactCSSTransitionGroup transitionName="yolo" transitionLeaveTimeout={ 200 }>
+      <ReactCSSTransitionGroup
+        transitionName="yolo"
+        transitionEnter={false}
+        transitionLeaveTimeout={200}
+      >
         <span key="two" id="two" />
       </ReactCSSTransitionGroup>,
       container
@@ -213,5 +198,4 @@ describe('ReactCSSTransitionGroup', function() {
     expect(a.getDOMNode().childNodes.length).toBe(1);
     expect(a.getDOMNode().childNodes[0].id).toBe('one');
   });
-
 });

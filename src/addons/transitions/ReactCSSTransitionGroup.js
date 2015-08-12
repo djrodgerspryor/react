@@ -23,6 +23,30 @@ var ReactCSSTransitionGroupChild = React.createFactory(
   require('ReactCSSTransitionGroupChild')
 );
 
+function createTransitionTimeoutPropValidator(transitionType) {
+  var timeoutPropName = 'transition' + transitionType + 'Timeout';
+  var enabledPropName = 'transition' + transitionType;
+
+  return function(props) {
+    // If the transition is enabled
+    if (props[enabledPropName]) {
+      // If no timeout duration is provided
+      if (!props[timeoutPropName]) {
+        return new Error(
+          timeoutPropName + ' wasn\'t supplied to ReactCSSTransitionGroup: ' +
+          'this can cause unreliable animations and won\'t be supported in ' +
+          'a future version of React. See https://facebook.github.io/' +
+          'react/docs/animation.html#getting-started'
+        );
+
+      // If the duration isn't a number
+      } else if (typeof props[timeoutPropName] !== 'number') {
+        return new Error(timeoutPropName + ' must be a number (in milliseconds)');
+      }
+    }
+  };
+}
+
 var ReactCSSTransitionGroup = React.createClass({
   displayName: 'ReactCSSTransitionGroup',
 
@@ -31,9 +55,9 @@ var ReactCSSTransitionGroup = React.createClass({
     transitionAppear: React.PropTypes.bool,
     transitionEnter: React.PropTypes.bool,
     transitionLeave: React.PropTypes.bool,
-    transitionAppearTimeout: React.PropTypes.number,
-    transitionEnterTimeout: React.PropTypes.number,
-    transitionLeaveTimeout: React.PropTypes.number,
+    transitionAppearTimeout: createTransitionTimeoutPropValidator('Appear'),
+    transitionEnterTimeout: createTransitionTimeoutPropValidator('Enter'),
+    transitionLeaveTimeout: createTransitionTimeoutPropValidator('Leave'),
   },
 
   getDefaultProps: function() {
